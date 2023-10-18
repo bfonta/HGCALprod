@@ -62,4 +62,10 @@ It is possible to run only the last step (reco with TICL).
 ```bash condor/submit_onlystep3.sh``` is the command to run to setup the production and submit condor jobs. It requires the following arguments:
 * ```-f```: folder name in the storage area where step2 files (in a proper ```step2/``` folder) are stored
 * ```-s```: name of the folder where step3 files will be stored
-It is assumed the storage folder is ```/data_CMS/cms/${USER}/```.
+It is assumed the storage folder is ```/data_CMS/cms/${USER}/```
+
+Example:
+
+```shell
+bash condor/submit_onlystep3.sh -f SinglePion_0PU_10En200_11Jul -s step3
+```
