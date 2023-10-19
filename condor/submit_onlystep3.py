@@ -72,7 +72,7 @@ def submit(args):
                "",
                "getenv = true",
                "",
-               "T3Queue = long",
+               "T3Queue = {}".format(args.queue),
                "WNTag=el7",
                "+SingularityCmd = \"\"",
                "include : /opt/exp_soft/cms/t3/t3queue |",
@@ -107,6 +107,8 @@ if __name__ == "__main__":
                         help="Kernel factor to be applied to other LC while computing the local density")
     parser.add_argument("--n2", "--nstep2_files", default=2, type=int,
                         help="Number of step2 files to consider")
+    parser.add_argument('-q', "--queue", default="short", choices=("short", "long"),
+                        help="HTCondor queue type")
     parser.add_argument('-n', "--dryrun", help="Dry-run", action="store_true")
 
     FLAGS = parser.parse_args()
