@@ -50,25 +50,27 @@ def step2_filelist(folder, nfiles, inspect=False):
 
 def submit(args):
     """Create HTCondor submission files and launch the submission."""
-    logs_f = "condor/log_step3_" + args.data_folder
+    jobs_f = "condor"
+    logs_f = os.path.join(jobs_f, "log_step3_" + args.data_folder)
     check(logs_f)
 
-    step2_l = step2_filelist(args.data_folder, args.n2)
-    with open(os.path.join(logs_f, "step2files.txt"), 'w') as afile:
+    step2_l = step2_filelist(args.data_folder, args.nfiles)
+    with open(os.path.join(logs_f, "step2UsedFiles.txt"), 'w') as afile:
         afile.write('\n'.join(str(x) for x in step2_l))
 
     sub_file = os.path.join(logs_f, "condor.sub")
+    batch_logs = os.path.join(logs_f, "$(Step2)_CDens$(CDens)_CDist$(CDist)_KDens$(KDens)")
     with open(sub_file, "w") as afile:
-        mes = ("executable  = batchScript_onlystep3.sh",
+        mes = ("executable  = {}/batchScript_onlystep3.sh".format(jobs_f),
                "arguments   = {} {} $(Step2) $(CDens) $(CDist) $(KDens)"
                .format(args.data_folder, args.sample_name),
                "universe    = vanilla",
-               "output      = $(Step2)_CDens$(CDens)_CDist$(CDist)_KDens$(KDens).out",
-               "error       = $(Step2)_CDens$(CDens)_CDist$(CDist)_KDens$(KDens).err",
-               "log         = $(Step2)_CDens$(CDens)_CDist$(CDist)_KDens$(KDens).log",
+               "output      = {}.out".format(batch_logs),
+               "error       = {}.err".format(batch_logs),
+               "log         = {}.log".format(batch_logs),
                "",
                "+JobFlavour = \"tomorrow\"",
-               "+JobBatchName = \"step3_{}\"".format(args.data_folder),
+               "+JobBatchName = \"Scan_{}{}\"".format(args.data_folder, args.tag),
                "",
                "getenv = true",
                "",
@@ -79,14 +81,15 @@ def submit(args):
                "\n")
         afile.write('\n'.join(mes))
 
-        mes = "queue Step2, CDens, CDist, KDens (\n"
+        mes = "queue Step2, CDens, CDist, KDens from (\n"
         for item in product(step2_l, args.cdens, args.cdist, args.kdens):
-            mes += '  ' + ', '.join(str(it) for it in item) + '\n'
+            item2 = '  ' + ', '.join(str(it) for it in item) + '\n'  
+            mes += item2.replace('.', 'p').replace('-', 'm')
         mes += ')'
         afile.write(mes)
 
     if not args.dryrun:
-        subm_comm  = 'condor_submit {} -queue from step2files.txt'.format(sub_file)
+        subm_comm  = 'condor_submit {}'.format(sub_file)
         pipeopt = dict(shell=True, stdout=PIPE, encoding='utf-8')
         pipe = Popen(subm_comm, **pipeopt)
     else:
@@ -99,13 +102,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Submit only step3.')
     parser.add_argument('-f', "--data_folder", required=True, help="Data folder")
     parser.add_argument('-s', "--sample_name", required=True, help="Sample name")
+    parser.add_argument('-t', "--tag", required=False, default='',
+                        help="Tag for similar runs")
     parser.add_argument("--cdens", "--criticalDensity", nargs='+', default=[0.6],
                         help="Critical density in GeV")
     parser.add_argument("--cdist", "--criticalEtaPhiDistance", nargs='+', default=[0.025],
                         help="Minimal distance in eta,phi space from nearestHigher to become a seed")
     parser.add_argument("--kdens", "--kernelDensityFactor", nargs='+', default=[0.2],
                         help="Kernel factor to be applied to other LC while computing the local density")
-    parser.add_argument("--n2", "--nstep2_files", default=2, type=int,
+    parser.add_argument("--nfiles", "--nstep2_files", default=2, type=int,
                         help="Number of step2 files to consider")
     parser.add_argument('-q', "--queue", default="short", choices=("short", "long"),
                         help="HTCondor queue type")

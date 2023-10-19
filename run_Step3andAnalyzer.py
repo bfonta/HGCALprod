@@ -6,6 +6,14 @@ FLAGS.register('isScan', 0,
                VarParsing.multiplicity.singleton,
                VarParsing.varType.int,
                "whether we run the default or a parameter scan")
+FLAGS.register('step2File', "step2.root",
+               VarParsing.multiplicity.singleton,
+               VarParsing.varType.string,
+               "step2 file serving as input")
+FLAGS.register('step3File', "step3.root",
+               VarParsing.multiplicity.singleton,
+               VarParsing.varType.string,
+               "step2 file serving as output")
 FLAGS.register('criticalDensity', 0.6,
                VarParsing.multiplicity.singleton,
                VarParsing.varType.float,
@@ -53,7 +61,7 @@ process.maxEvents = cms.untracked.PSet(
 # Input source
 process.source = cms.Source(
     "PoolSource",
-    fileNames = cms.untracked.vstring('file:step2.root'),
+    fileNames = cms.untracked.vstring('file:' + FLAGS.step2File),
     secondaryFileNames = cms.untracked.vstring(),
     skipEvents = cms.untracked.uint32(20),
     duplicateCheckMode = cms.untracked.string('noDuplicateCheck'),
@@ -104,7 +112,7 @@ process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
         dataTier = cms.untracked.string('GEN-SIM-RECO'),
         filterName = cms.untracked.string('')
     ),
-    fileName = cms.untracked.string('file:step3.root'),
+    fileName = cms.untracked.string('file:' + FLAGS.step3File),
     outputCommands = process.FEVTDEBUGHLTEventContent.outputCommands,
     splitLevel = cms.untracked.int32(0)
 )
