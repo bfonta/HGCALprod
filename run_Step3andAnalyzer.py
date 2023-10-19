@@ -13,7 +13,7 @@ FLAGS.register('step2File', "step2.root",
 FLAGS.register('step3File', "step3.root",
                VarParsing.multiplicity.singleton,
                VarParsing.varType.string,
-               "step2 file serving as output")
+               "step3 file serving as output")
 FLAGS.register('criticalDensity', 0.6,
                VarParsing.multiplicity.singleton,
                VarParsing.varType.float,
@@ -27,6 +27,10 @@ FLAGS.register('kernelDensityFactor', 0.2,
                VarParsing.varType.float,
                "Kernel factor to be applied to other LC while computing the local density")
 FLAGS.parseArguments()
+
+print('##################################################################################')
+print(FLAGS)
+print('##################################################################################')
 
 from Configuration.StandardSequences.Eras import eras
 from Configuration.Eras.Era_Phase2C17I13M9_cff import Phase2C17I13M9
@@ -117,21 +121,22 @@ process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
     splitLevel = cms.untracked.int32(0)
 )
 
-process.ticlTrackstersCLUE3DHigh.criticalDensity = cms.double(FLAGS.criticalDensity)
-process.ticlTrackstersCLUE3DHigh.criticalEtaPhiDistance = cms.double(FLAGS.criticalEtaPhiDistance)
-process.ticlTrackstersCLUE3DHigh.kernelDensityFactor = cms.double(FLAGS.kernelDensityFactor)
-#process.particleFlowClusterHGCal.initialClusteringStep.filterByTracksterPID = cms.bool(True)
+process.ticlTrackstersCLUE3DHigh.pluginPatternRecognitionByCLUE3D.criticalDensity = cms.double(FLAGS.criticalDensity)
+process.ticlTrackstersCLUE3DHigh.pluginPatternRecognitionByCLUE3D.criticalEtaPhiDistance = cms.double(FLAGS.criticalEtaPhiDistance)
+process.ticlTrackstersCLUE3DHigh.pluginPatternRecognitionByCLUE3D.kernelDensityFactor = cms.double(FLAGS.kernelDensityFactor)
 
 process.ticlMultiClustersFromTrackstersTEST = cms.EDProducer(
     "MultiClustersFromTrackstersProducer",
     LayerClusters = cms.InputTag("hgcalLayerClusters"),
+    Tracksters = cms.InputTag("ticlTrackstersCLUE3DHigh"),
     mightGet = cms.optional.untracked.vstring,
     verbosity = cms.untracked.uint32(3)
 )
+
 if FLAGS.isScan:
-    process.ticlMultiClustersFromTrackstersTEST.Tracksters = cms.InputTag("ticlTrackstersCLUE3DHigh"), ## raw tracksters clue3d
+    process.ticlMultiClustersFromTrackstersTEST.Tracksters = "ticlTrackstersCLUE3DHigh", ## raw tracksters clue3d
 else:
-    process.ticlMultiClustersFromTrackstersTEST.Tracksters = cms.InputTag("ticlTrackstersMerge"), ## merged tracksters
+    process.ticlMultiClustersFromTrackstersTEST.Tracksters = "ticlTrackstersMerge", ## merged tracksters
 
 process.ana = cms.EDAnalyzer(
     'HGCalAnalysis',
@@ -157,7 +162,7 @@ process.ana = cms.EDAnalyzer(
 )
 
 process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string("file:step3.root"))
+                                   fileName = cms.string("file:" + FLAGS.step3File))
 
 # Other statements
 from Configuration.AlCa.GlobalTag import GlobalTag

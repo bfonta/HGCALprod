@@ -51,7 +51,7 @@ def step2_filelist(folder, nfiles, inspect=False):
 def submit(args):
     """Create HTCondor submission files and launch the submission."""
     jobs_f = "condor"
-    logs_f = os.path.join(jobs_f, "log_step3_" + args.data_folder)
+    logs_f = os.path.join(jobs_f, "log_step3_" + args.data_folder + args.tag)
     check(logs_f)
 
     step2_l = step2_filelist(args.data_folder, args.nfiles)
@@ -62,8 +62,8 @@ def submit(args):
     batch_logs = os.path.join(logs_f, "$(Step2)_CDens$(CDens)_CDist$(CDist)_KDens$(KDens)")
     with open(sub_file, "w") as afile:
         mes = ("executable  = {}/batchScript_onlystep3.sh".format(jobs_f),
-               "arguments   = {} {} $(Step2) $(CDens) $(CDist) $(KDens)"
-               .format(args.data_folder, args.sample_name),
+               "arguments   = {} {} $(Step2) {} $(CDens) $(CDist) $(KDens)"
+               .format(args.data_folder, args.sample_name, args.tag),
                "universe    = vanilla",
                "output      = {}.out".format(batch_logs),
                "error       = {}.err".format(batch_logs),
