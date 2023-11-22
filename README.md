@@ -55,17 +55,12 @@ For the case of photons and pions, ```condor/submit.sh``` launches ```CloseByPar
 
 The other arguments should be self-explanatory. They are also documented [here](https://hgcal.web.cern.ch/Generation/CloseByParticleGun/).
 
-## To process only step3
+## Process only step3
 
-It is possible to run only the last step (reco with TICL).
-
-```bash condor/submit_onlystep3.sh``` is the command to run to setup the production and submit condor jobs. It requires the following arguments:
-* ```-f```: folder name in the storage area where step2 files (in a proper ```step2/``` folder) are stored
-* ```-s```: name of the folder where step3 files will be stored
-It is assumed the storage folder is ```/data_CMS/cms/${USER}/```
-
-Example:
+It is possible to run only the last step (reco with TICL):
 
 ```shell
-bash condor/submit_onlystep3.sh -f SinglePion_0PU_10En200_11Jul -s step3
+python condor/submit_onlystep3.py -f SinglePion_0PU_10En200_CEH_16Jul -s step3 -t _V2 -q short --cdens 0.4 0.5 0.6 0.7 --cdist 0.01 0.025 0.04 --kdens 0.15 0.2 0.25 --nfiles 5 -n
 ```
+
+The above will created the HTCondor submission folders and file. Remove ```-n``` (dry-run) to actually run the HTCondor jobs. Use ```--help``` for a description of the options.
